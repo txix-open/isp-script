@@ -22,40 +22,42 @@ type Engine struct {
 }
 
 func NewEngine() *Engine {
-	return &Engine{&sync.Pool{
-		New: func() interface{} {
-			vm := goja.New()
-			return vm
-		},
-	}}
+	return &Engine{
+		pool: &sync.Pool{
+			New: func() any {
+				vm := goja.New()
+				return vm
+			},
+		}}
 }
 
-func (m *Engine) Execute(s Script, arg interface{}, opts ...ExecOption) (interface{}, error) {
-	vm := m.pool.Get().(*goja.Runtime)
-
-	config := &configOptions{
+func (m *Engine) Execute(s Script, arg any, opts ...ExecOption) (any, error) {
+	config := &options{
 		arg:           arg,
-		scriptTimeout: 2 * time.Second,
+		scriptTimeout: 1 * time.Second,
 	}
 	for _, o := range opts {
 		o(config)
 	}
-	config.timer = time.AfterFunc(config.scriptTimeout, func() {
+
+	vm := m.pool.Get().(*goja.Runtime)
+	vm.ClearInterrupt()
+	config.set(vm)
+	timer := time.AfterFunc(config.scriptTimeout, func() {
 		vm.Interrupt("execution timeout")
 	})
 	defer func() {
-		config.timer.Stop()
+		timer.Stop()
 		vm.ClearInterrupt()
+		config.reset(vm)
 		m.pool.Put(vm)
 	}()
-
-	config.set(vm)
-	defer config.unset(vm)
 
 	res, err := vm.RunProgram(s.prog)
 	if err != nil {
 		return nil, castErr(err)
 	}
+
 	return res.Export(), nil
 }
 

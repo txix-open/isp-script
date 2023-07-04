@@ -1,31 +1,12 @@
 package scripts
 
-import (
-	"bytes"
-	"encoding/json"
-)
-
-type consoleLog struct {
-	logBuf *bytes.Buffer
-}
-
-func (cl *consoleLog) log(args ...interface{}) {
-	tmp, err := json.Marshal(args)
-	if err != nil {
-		panic(err)
-	}
-	cl.logBuf.Write(tmp)
-	cl.logBuf.Write([]byte(",\n"))
-}
-
-func newConsoleLog(logBuf *bytes.Buffer) map[string]interface{} {
-	if logBuf == nil {
-		return map[string]interface{}{
-			"log": func(args ...interface{}) {},
+func newConsoleLog(logger Logger) map[string]any {
+	if logger == nil {
+		return map[string]any{
+			"log": func(args ...any) {},
 		}
 	}
-	newConsoleLog := &consoleLog{logBuf: logBuf}
-	return map[string]interface{}{
-		"log": newConsoleLog.log,
+	return map[string]any{
+		"log": logger.Log,
 	}
 }

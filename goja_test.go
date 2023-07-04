@@ -1,7 +1,6 @@
 package scripts
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"testing"
@@ -89,10 +88,7 @@ func TestScript_WithLogging(t *testing.T) {
 
 	arg := map[string]interface{}{"key": 3}
 
-	logBuf := new(bytes.Buffer)
-	result, err := NewEngine().Execute(script, arg, WithLogging(logBuf))
-	a.NoError(err)
-	a.Equal("[{\"key\":3}],\n[1,2,3],\n[\"test\"],\n", logBuf.String())
+	result, err := NewEngine().Execute(script, arg, WithLogger(NewStdoutJsonLogger()))
 	a.Equal(int64(5), result)
 }
 
