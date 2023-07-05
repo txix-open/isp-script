@@ -20,6 +20,8 @@ func TestScript_Toolkit(t *testing.T) {
     const future = toolkit.now().Add(toolkit.durationFromMillis(1000));
     console.log(date.Before(future));
     console.log(date.Format("2006-01-02"));
+    const jsDate = toolkit.goTimeToDate(future);
+    console.log(jsDate.getTime());
 	return 5
 `
 	script, err := NewScript([]byte(fmt.Sprintf("(function() { %s })();", SCRIPT)))

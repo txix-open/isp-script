@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dop251/goja"
 	"github.com/google/uuid"
 )
 
@@ -18,6 +19,7 @@ var (
 		"parseTime":          ParseTime,
 		"durationFromMillis": DurationFromMillis,
 		"now":                Now,
+		"goTimeToDate":       GoTimeToDate,
 	}
 )
 
@@ -62,14 +64,14 @@ var (
 )
 
 func ParseTime(value string, extraFormats ...string) *time.Time {
-	allFormats := formats
-	if len(extraFormats) > 0 {
-		allFormats = make([]string, len(formats))
-		copy(allFormats, formats)
-		allFormats = append(allFormats, extraFormats...)
+	for _, format := range formats {
+		t, err := time.Parse(format, value)
+		if err == nil {
+			return &t
+		}
 	}
 
-	for _, format := range allFormats {
+	for _, format := range extraFormats {
 		t, err := time.Parse(format, value)
 		if err == nil {
 			return &t
@@ -77,4 +79,21 @@ func ParseTime(value string, extraFormats ...string) *time.Time {
 	}
 
 	return nil
+}
+
+func GoTimeToDate(call goja.FunctionCall, vm *goja.Runtime) goja.Value {
+	arg := call.Argument(0)
+	goType := arg.Export()
+	nanos := int64(0)
+	switch t := goType.(type) {
+	case time.Time:
+		nanos = t.UnixNano()
+	case *time.Time:
+		nanos = t.UnixNano()
+	}
+	date, err := vm.New(vm.Get("Date").ToObject(vm), vm.ToValue(nanos/1e6))
+	if err != nil {
+		panic(err)
+	}
+	return date
 }
