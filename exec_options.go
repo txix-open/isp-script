@@ -6,9 +6,9 @@ import (
 	"github.com/dop251/goja"
 )
 
-type ExecOption func(opt *options)
+type ExecOption func(opt *execOptions)
 
-type options struct {
+type execOptions struct {
 	scriptTimeout   time.Duration
 	arg             any
 	logger          Logger
@@ -17,19 +17,19 @@ type options struct {
 }
 
 func WithTimeout(duration time.Duration) ExecOption {
-	return func(opt *options) {
+	return func(opt *execOptions) {
 		opt.scriptTimeout = duration
 	}
 }
 
 func WithLogger(logger Logger) ExecOption {
-	return func(opt *options) {
+	return func(opt *execOptions) {
 		opt.logger = logger
 	}
 }
 
 func WithSet(name string, f any) ExecOption {
-	return func(opt *options) {
+	return func(opt *execOptions) {
 		if opt.data == nil {
 			opt.data = make(map[string]any)
 		}
@@ -42,12 +42,12 @@ func WithDefaultToolkit() ExecOption {
 }
 
 func WithFieldNameMapper(fieldNameMapper goja.FieldNameMapper) ExecOption {
-	return func(opt *options) {
+	return func(opt *execOptions) {
 		opt.fieldNameMapper = fieldNameMapper
 	}
 }
 
-func (c *options) set(vm *goja.Runtime) {
+func (c *execOptions) set(vm *goja.Runtime) {
 	if c.fieldNameMapper != nil {
 		vm.SetFieldNameMapper(c.fieldNameMapper)
 	}
@@ -59,7 +59,7 @@ func (c *options) set(vm *goja.Runtime) {
 	}
 }
 
-func (c *options) reset(vm *goja.Runtime) {
+func (c *execOptions) reset(vm *goja.Runtime) {
 	vm.SetFieldNameMapper(nil)
 	vm.Set("arg", goja.Undefined())
 	vm.Set("console", goja.Undefined())

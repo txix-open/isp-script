@@ -41,24 +41,24 @@ func NewEngine(opts ...EngineOption) *Engine {
 }
 
 func (m *Engine) Execute(s Script, arg any, opts ...ExecOption) (any, error) {
-	config := &options{
+	options := &execOptions{
 		arg:           arg,
 		scriptTimeout: 1 * time.Second,
 	}
 	for _, o := range opts {
-		o(config)
+		o(options)
 	}
 
 	vm := m.pool.Get().(*goja.Runtime)
 	vm.ClearInterrupt()
-	config.set(vm)
-	timer := time.AfterFunc(config.scriptTimeout, func() {
+	options.set(vm)
+	timer := time.AfterFunc(options.scriptTimeout, func() {
 		vm.Interrupt("execution timeout")
 	})
 	defer func() {
 		timer.Stop()
 		vm.ClearInterrupt()
-		config.reset(vm)
+		options.reset(vm)
 		m.pool.Put(vm)
 	}()
 
