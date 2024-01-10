@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/dop251/goja"
+	"github.com/dop251/goja_nodejs/require"
 )
 
 type Script struct {
@@ -21,11 +22,19 @@ type Engine struct {
 	pool *sync.Pool
 }
 
-func NewEngine() *Engine {
+func NewEngine(opts ...EngineOption) *Engine {
+	options := &engineOptions{
+		moduleLoader: NewStaticModuleLoader(),
+	}
+	for _, opt := range opts {
+		opt(options)
+	}
+	registry := require.NewRegistryWithLoader(options.moduleLoader.SourceLoader())
 	return &Engine{
 		pool: &sync.Pool{
 			New: func() any {
 				vm := goja.New()
+				registry.Enable(vm)
 				return vm
 			},
 		}}

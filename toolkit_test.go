@@ -1,9 +1,10 @@
-package scripts
+package scripts_test
 
 import (
 	"fmt"
 	"testing"
 
+	scripts "github.com/integration-system/isp-script"
 	"github.com/stretchr/testify/require"
 )
 
@@ -24,13 +25,13 @@ func TestScript_Toolkit(t *testing.T) {
     console.log(jsDate.getTime());
 	return 5
 `
-	script, err := NewScript([]byte(fmt.Sprintf("(function() { %s })();", SCRIPT)))
+	script, err := scripts.NewScript([]byte(fmt.Sprintf("(function() { %s })();", SCRIPT)))
 	a.NoError(err)
-	result, err := NewEngine().Execute(
+	result, err := scripts.NewEngine().Execute(
 		script,
 		"2006-01-02 15:04:05",
-		WithDefaultToolkit(),
-		WithLogger(NewStdoutJsonLogger()),
+		scripts.WithDefaultToolkit(),
+		scripts.WithLogger(scripts.NewStdoutJsonLogger()),
 	)
 	a.NoError(err)
 	a.Equal(int64(5), result)

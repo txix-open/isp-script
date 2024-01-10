@@ -1,4 +1,4 @@
-package scripts
+package scripts_test
 
 import (
 	"errors"
@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/dop251/goja"
+	scripts "github.com/integration-system/isp-script"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -63,12 +64,12 @@ func TestScript_Default(t *testing.T) {
 	const SCRIPT = `
 	return shared()
 `
-	script, err := NewScript([]byte(SHARED), []byte(fmt.Sprintf("(function() { %s })();", SCRIPT)))
+	script, err := scripts.NewScript([]byte(SHARED), []byte(fmt.Sprintf("(function() { %s })();", SCRIPT)))
 	a.NoError(err)
 
 	arg := map[string]interface{}{"key": 3, "4": 7}
 
-	result, err := NewEngine().Execute(script, arg)
+	result, err := scripts.NewEngine().Execute(script, arg)
 	a.NoError(err)
 
 	a.Equal(int64(5), result)
@@ -83,12 +84,12 @@ func TestScript_WithLogging(t *testing.T) {
 	console.log("test")
 	return 5
 `
-	script, err := NewScript([]byte(fmt.Sprintf("(function() { %s })();", SCRIPT)))
+	script, err := scripts.NewScript([]byte(fmt.Sprintf("(function() { %s })();", SCRIPT)))
 	a.NoError(err)
 
 	arg := map[string]interface{}{"key": 3}
 
-	result, err := NewEngine().Execute(script, arg, WithLogger(NewStdoutJsonLogger()))
+	result, err := scripts.NewEngine().Execute(script, arg, scripts.WithLogger(scripts.NewStdoutJsonLogger()))
 	a.Equal(int64(5), result)
 }
 
@@ -98,16 +99,16 @@ func TestScript_WithData(t *testing.T) {
 	const SCRIPT = `
 	return i + str + mp[3]+arg["key"]+arr
 `
-	script, err := NewScript([]byte(fmt.Sprintf("(function() { %s })();", SCRIPT)))
+	script, err := scripts.NewScript([]byte(fmt.Sprintf("(function() { %s })();", SCRIPT)))
 	a.NoError(err)
 
 	arg := map[string]interface{}{"key": 3}
 
-	result, err := NewEngine().Execute(script, arg,
-		WithSet("i", 1),
-		WithSet("str", "two"),
-		WithSet("mp", map[string]interface{}{"3": "four"}),
-		WithSet("arr", []int{5, 6, 7}))
+	result, err := scripts.NewEngine().Execute(script, arg,
+		scripts.WithSet("i", 1),
+		scripts.WithSet("str", "two"),
+		scripts.WithSet("mp", map[string]interface{}{"3": "four"}),
+		scripts.WithSet("arr", []int{5, 6, 7}))
 	a.NoError(err)
 
 	a.Equal("1twofour35,6,7", result)
@@ -119,7 +120,7 @@ func TestScript_WithFunc(t *testing.T) {
 	const SCRIPT = `
 	return sqrt(arg["key"])
 `
-	script, err := NewScript([]byte(fmt.Sprintf("(function() { %s })();", SCRIPT)))
+	script, err := scripts.NewScript([]byte(fmt.Sprintf("(function() { %s })();", SCRIPT)))
 	a.NoError(err)
 
 	arg := map[string]interface{}{"key": 3}
@@ -127,7 +128,7 @@ func TestScript_WithFunc(t *testing.T) {
 	sqrt := func(x int) int {
 		return x * x
 	}
-	result, err := NewEngine().Execute(script, arg, WithSet("sqrt", sqrt))
+	result, err := scripts.NewEngine().Execute(script, arg, scripts.WithSet("sqrt", sqrt))
 	a.NoError(err)
 
 	a.Equal(int64(9), result)
@@ -139,7 +140,7 @@ func TestScript_WithDataWithFunc(t *testing.T) {
 	const SCRIPT = `
 	return sqrt(arg["key"]) + sqrt(i)
 `
-	script, err := NewScript([]byte(fmt.Sprintf("(function() { %s })();", SCRIPT)))
+	script, err := scripts.NewScript([]byte(fmt.Sprintf("(function() { %s })();", SCRIPT)))
 	a.NoError(err)
 
 	arg := map[string]interface{}{"key": 3}
@@ -147,7 +148,7 @@ func TestScript_WithDataWithFunc(t *testing.T) {
 	sqrt := func(x int) int {
 		return x * x
 	}
-	result, err := NewEngine().Execute(script, arg, WithSet("sqrt", sqrt), WithSet("i", 1))
+	result, err := scripts.NewEngine().Execute(script, arg, scripts.WithSet("sqrt", sqrt), scripts.WithSet("i", 1))
 	a.NoError(err)
 
 	a.Equal(int64(10), result)
