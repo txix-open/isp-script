@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	scripts "github.com/integration-system/isp-script"
 	"github.com/stretchr/testify/require"
+	scripts "github.com/txix-open/isp-script"
 )
 
 func TestScript_Toolkit(t *testing.T) {

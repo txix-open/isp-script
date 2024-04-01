@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	scripts "github.com/integration-system/isp-script"
 	"github.com/stretchr/testify/require"
+	scripts "github.com/txix-open/isp-script"
 )
 
 //go:embed test_modules

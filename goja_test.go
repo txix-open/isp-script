@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/dop251/goja"
-	scripts "github.com/integration-system/isp-script"
 	"github.com/stretchr/testify/assert"
+	scripts "github.com/txix-open/isp-script"
 )
 
 func TestGoja_AddFunction(t *testing.T) {
