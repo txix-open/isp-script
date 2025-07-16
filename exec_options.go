@@ -11,6 +11,7 @@ type ExecOption func(opt *execOptions)
 type execOptions struct {
 	scriptTimeout   time.Duration
 	arg             any
+	traceMain       bool
 	logger          Logger
 	data            map[string]any
 	fieldNameMapper goja.FieldNameMapper
@@ -34,6 +35,12 @@ func WithSet(name string, f any) ExecOption {
 			opt.data = make(map[string]any)
 		}
 		opt.data[name] = f
+	}
+}
+
+func WithTraceMain() ExecOption {
+	return func(opt *execOptions) {
+		opt.traceMain = true
 	}
 }
 
