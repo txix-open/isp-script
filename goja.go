@@ -2,11 +2,17 @@ package scripts
 
 import (
 	"bytes"
+	"errors"
 	"sync"
 	"time"
 
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/require"
+)
+
+var (
+	errMainFuncNotFound = errors.New("main function not found in script")
+	errMainIsNotAFunc   = errors.New("main is not a function")
 )
 
 type Script struct {
@@ -61,12 +67,27 @@ func (m *Engine) Execute(s Script, arg any, opts ...ExecOption) (any, error) {
 	})
 	defer func() {
 		timer.Stop()
-		vm.ClearInterrupt()
-		options.reset(vm)
-		m.pool.Put(vm)
 	}()
 
 	res, err := vm.RunProgram(s.prog)
+	if err != nil {
+		return nil, castErr(err)
+	}
+
+	if !options.traceMain {
+		return res.Export(), nil
+	}
+
+	if vm.Get("main") == nil {
+		return nil, castErr(errMainFuncNotFound)
+	}
+
+	mainFn, ok := goja.AssertFunction(vm.Get("main"))
+	if !ok {
+		return nil, castErr(errMainIsNotAFunc)
+	}
+
+	res, err = mainFn(goja.Undefined(), vm.ToValue(arg))
 	if err != nil {
 		return nil, castErr(err)
 	}

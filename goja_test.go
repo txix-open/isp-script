@@ -90,7 +90,40 @@ func TestScript_WithLogging(t *testing.T) {
 	arg := map[string]interface{}{"key": 3}
 
 	result, err := scripts.NewEngine().Execute(script, arg, scripts.WithLogger(scripts.NewStdoutJsonLogger()))
+	a.NoError(err)
 	a.Equal(int64(5), result)
+}
+
+func TestScript_WithMainFuncTrace(t *testing.T) {
+	a := assert.New(t)
+
+	const SCRIPT = `
+	const x = 1
+	function test(a) {
+		return a + x
+	}
+
+	function main(arg) {
+		return test(arg)
+	}
+`
+
+	script, err := scripts.NewScript([]byte(SCRIPT))
+	a.NoError(err)
+
+	arg := 3
+
+	engine := scripts.NewEngine()
+
+	result, err := engine.Execute(script, arg, scripts.WithTraceMain())
+	a.NoError(err)
+	a.Equal(int64(arg+1), result)
+
+	arg = 5
+
+	result, err = engine.Execute(script, arg, scripts.WithTraceMain())
+	a.NoError(err)
+	a.Equal(int64(arg+1), result)
 }
 
 func TestScript_WithData(t *testing.T) {
