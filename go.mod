@@ -2,6 +2,8 @@ module github.com/txix-open/isp-script
 
 go 1.23.0
 
+toolchain go1.23.3
+
 require (
 	github.com/dop251/goja v0.0.0-20250630131328-58d95d85e994
 	github.com/dop251/goja_nodejs v0.0.0-20250409162600-f7acab6894b0
