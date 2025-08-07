@@ -25,11 +25,15 @@ type Engine struct {
 func NewEngine(opts ...EngineOption) *Engine {
 	options := &engineOptions{
 		moduleLoader: NewStaticModuleLoader(),
+		pathResolver: require.DefaultPathResolver,
 	}
 	for _, opt := range opts {
 		opt(options)
 	}
-	registry := require.NewRegistryWithLoader(options.moduleLoader.SourceLoader())
+	registry := require.NewRegistry(
+		require.WithLoader(options.moduleLoader.SourceLoader()),
+		require.WithPathResolver(options.pathResolver),
+	)
 	return &Engine{
 		pool: &sync.Pool{
 			New: func() any {
