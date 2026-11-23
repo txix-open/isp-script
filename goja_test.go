@@ -7,8 +7,54 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	scripts "github.com/txix-open/isp-script"
 )
+
+func TestExecutePipeline_Chain(t *testing.T) {
+	a := assert.New(t)
+
+	s1, err := scripts.NewScript([]byte(`(function() { return arg + 1 })();`))
+	require.NoError(t, err)
+	s2, err := scripts.NewScript([]byte(`(function() { return arg + 1 })();`))
+	require.NoError(t, err)
+	s3, err := scripts.NewScript([]byte(`(function() { return arg * 2 })();`))
+	require.NoError(t, err)
+
+	result, err := scripts.NewEngine().ExecutePipeline([]scripts.Script{s1, s2, s3}, 3)
+	a.NoError(err)
+	a.Equal(int64(10), result)
+}
+
+func TestExecuteList_Chain(t *testing.T) {
+	a := assert.New(t)
+
+	s1, err := scripts.NewScript([]byte(`(function() { return arg + 1 })();`))
+	require.NoError(t, err)
+	s2, err := scripts.NewScript([]byte(`(function() { return arg + 1 })();`))
+	require.NoError(t, err)
+	s3, err := scripts.NewScript([]byte(`(function() { return arg * 2 })();`))
+	require.NoError(t, err)
+
+	result, err := scripts.NewEngine().ExecuteList([]scripts.Script{s1, s2, s3}, 3)
+	a.NoError(err)
+	a.Equal([]any{int64(4), int64(4), int64(6)}, result)
+}
+
+func TestExecuteListParallel_Basic(t *testing.T) {
+	a := assert.New(t)
+
+	s1, err := scripts.NewScript([]byte(`(function() { return arg + 1 })();`))
+	require.NoError(t, err)
+	s2, err := scripts.NewScript([]byte(`(function() { return arg + 1 })();`))
+	require.NoError(t, err)
+	s3, err := scripts.NewScript([]byte(`(function() { return arg * 2 })();`))
+	require.NoError(t, err)
+
+	result, err := scripts.NewEngine().ExecuteListParallel([]scripts.Script{s1, s2, s3}, 3)
+	a.NoError(err)
+	a.Equal([]any{int64(4), int64(4), int64(6)}, result)
+}
 
 func TestGoja_AddFunction(t *testing.T) {
 	a := assert.New(t)
@@ -91,6 +137,7 @@ func TestScript_WithLogging(t *testing.T) {
 
 	result, err := scripts.NewEngine().Execute(script, arg, scripts.WithLogger(scripts.NewStdoutJsonLogger()))
 	a.Equal(int64(5), result)
+	a.NoError(err)
 }
 
 func TestScript_WithData(t *testing.T) {
